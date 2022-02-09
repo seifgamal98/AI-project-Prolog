@@ -1,0 +1,95 @@
+grid(4,4).
+neo_loc(0,0). 
+hostages_loc([[1,1],[1,2]]). 
+booth(0,2). 
+capacity(1).
+
+
+navigation_neo(X,Y,C,L,s0,X1,Y1):-
+	grid(X1,Y1),
+    hostages_loc(L),
+	neo_loc(X,Y),
+	capacity(C).
+
+navigation_neo(X,Y,C,L1,result(A,S),XG,YG):-
+    navigation_neo(X1,Y1,CN,L2,S,XG1,YG1),
+    
+  (
+       (
+        A=carry,
+        Y = Y1,
+        X = X1,
+        C is CN - 1,
+        comparehostage([X,Y],L2),
+        C>=0,
+        removehostage(L2,[X,Y],L1),
+        XG is XG1,
+        YG is YG1);
+       (  
+        A = drop,
+        Y = Y1,
+        X = X1,
+        capacity(M),
+        C = M, 
+        L1 = L2,
+        booth(X,Y),
+        CN<M,
+        XG is XG1,
+        YG is YG1);
+      (
+        A=right,
+        Y is Y1+1,
+        X = X1,
+        C = CN,
+        L1 = L2,
+        Y < YG1,
+        XG is XG1,
+        YG is YG1);
+    (
+        A=down,
+        X is X1+1,
+        Y = Y1,
+        C = CN,
+        L1 = L2,
+        X < XG1,
+        XG is XG1,
+        YG is YG1);
+    (
+        A=up,
+        X is X1-1,
+        Y = Y1,
+        C = CN,
+        L1 = L2,
+        X >= 0,
+        XG is XG1,
+        YG is YG1);
+    (
+        A=left,
+        Y is Y1-1,
+        X = X1,
+        C = CN,
+        L1 = L2,
+        Y >= 0,
+        XG is XG1,
+        YG is YG1)
+  ).
+
+removehostage([],_,[]).
+removehostage([[H1,H2]],[H1,H2],[]).
+removehostage([[H1,H2]|[T]],[H1,H2],[T]).
+removehostage([[T]|[H1,H2]],[H1,H2],[T]).
+
+comparehostage([H1, H2],[[H1,H2]]).
+comparehostage([H1, H2],[[H1,H2]|_]).
+comparehostage([H1, H2],[[,],[H3]|[T]]) :- 
+    comparehostage([[H1],[H2]],[[H3]|[T]]).
+
+
+
+
+
+goal(S):-  
+    booth(X,Y),
+    capacity(C),
+    grid(X1,Y1),
+    navigation_neo(X,Y,C,[],S,X1,Y1).
